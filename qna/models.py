@@ -18,7 +18,7 @@ class Question(models.Model):
     # 작성자는 장고의 내장 User 모델을 외래키로 사용
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자')
     # 생성 시간
-    created_at = models.DateTimeField(default=timezone.now, verbose_name='생성 시간')
+    created_at = models.DateTimeField(verbose_name='생성 시간')
     class Meta:
         verbose_name = 'QnA'
         verbose_name_plural = 'QnA'
@@ -28,15 +28,13 @@ class Question(models.Model):
 
 class Answer(models.Model):
     # 질문 - Answer가 Question에 연결됩니다.
-    question = models.ForeignKey(Question, related_name='answers', on_delete=models.CASCADE, verbose_name='질문')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='질문')
     # 답변 내용
     content = models.TextField(verbose_name='내용')
     # 작성자
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자')
     # 생성 시간
-    created_at = models.DateTimeField(default=timezone.now, verbose_name='생성 시간')
-    # 업데이트 시간
-    updated_at = models.DateTimeField(auto_now=True, verbose_name='업데이트 시간')
+    created_at = models.DateTimeField(default=timezone.now,verbose_name='생성 시간')
 
     class Meta:
         verbose_name = '답변'
@@ -44,4 +42,5 @@ class Answer(models.Model):
 
     def __str__(self):
         return f"{self.author}'s answer to {self.question.title}"
+
 
