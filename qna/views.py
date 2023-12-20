@@ -1,17 +1,18 @@
-from django.shortcuts import render, get_object_or_404, redirect
-from django.http import HttpResponse
-from django.utils import timezone
-from .models import Question, User
-from rest_framework import viewsets
-from .models import Question, Answer
-from django.contrib import messages
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
-from django.utils import timezone
-from .serializers import QuestionSerializer, AnswerSerializer
 from .forms import AnswerForm
-from .models import Question, Answer
+from .models import Question, Answer, User
+from rest_framework import viewsets
+from .serializers import QuestionSerializer, AnswerSerializer
 # Create your views here.
+class QuestionViewSet(viewsets.ModelViewSet):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+class AnswerViewSet(viewsets.ModelViewSet):
+    queryset = Answer.objects.all()
+    serializer_class = AnswerSerializer
+
 
 
 def index(request):
@@ -53,11 +54,5 @@ def answer_create(request, question_id):
 
 
 
-class QuestionViewSet(viewsets.ModelViewSet):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
 
-class AnswerViewSet(viewsets.ModelViewSet):
-    queryset = Answer.objects.all()
-    serializer_class = AnswerSerializer
 

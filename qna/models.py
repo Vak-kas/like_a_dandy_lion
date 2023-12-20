@@ -1,5 +1,4 @@
 from django.db import models
-from django.contrib.auth.models import User
 from django.utils import timezone
 
 
@@ -16,7 +15,7 @@ class Question(models.Model):
     # 질문 내용
     content = models.TextField(verbose_name='내용')
     # 작성자는 장고의 내장 User 모델을 외래키로 사용
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자', related_name='questions')
     # 생성 시간
     created_at = models.DateTimeField(verbose_name='생성 시간')
     class Meta:
@@ -27,12 +26,12 @@ class Question(models.Model):
         return self.title
 
 class Answer(models.Model):
-    # 질문 - Answer가 Question에 연결됩니다.
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='질문')
+    # 질문 - Answer가 Question에 연결
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='질문', related_name='answer')
     # 답변 내용
     content = models.TextField(verbose_name='내용')
     # 작성자
-    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자')
+    author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자',related_name='answers')
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now,verbose_name='생성 시간')
 

@@ -14,6 +14,6 @@ router.register(r'answers', AnswerViewSet)
 urlpatterns = [
     path('', views.index, name = "index"),
     path('', include(router.urls)),
-    path('<int:question_id>/', views.detail, name = "detail"),
+    path('<int:question_id>/', views.detail, name="detail"),
     path('answer/create/<int:question_id>/', views.answer_create, name="answer_create"),
 ]
