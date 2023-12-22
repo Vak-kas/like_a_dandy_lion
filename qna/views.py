@@ -4,6 +4,11 @@ from .forms import AnswerForm
 from .models import Question, Answer, User
 from rest_framework import viewsets
 from .serializers import QuestionSerializer, AnswerSerializer
+from rest_framework.decorators import api_view
+from rest_framework.response import Response
+from rest_framework import status
+from .models import Answer
+from .serializers import AnswerSerializer
 # Create your views here.
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -54,5 +59,13 @@ def answer_create(request, question_id):
 
 
 
+@api_view(['GET'])
+def get_answers_for_question(request, question_id):
+    try:
+        answers = Answer.objects.filter(question_id=question_id)
+        serializer = AnswerSerializer(answers, many=True)
+        return Response(serializer.data)
+    except Answer.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 

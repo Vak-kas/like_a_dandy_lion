@@ -6,11 +6,11 @@
 
 
 
-<h5>{{ question.answer_set.count }} 개의 답변</h5>
+<h5>{{ question.answer.all.count }} 개의 답변</h5>
 
 <div>
     <ul>
-        {% for answer in question.answer_set.all %}
+        {% for answer in question.answer.all %}
         <li>{{ answer.content }}</li>
         {% endfor %}
     </ul>
