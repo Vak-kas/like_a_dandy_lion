@@ -5,21 +5,29 @@ from .models import Question, Answer, User
 from rest_framework import viewsets
 from .serializers import QuestionSerializer, AnswerSerializer
 from rest_framework.decorators import api_view
+from rest_framework import generics
+from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
-from rest_framework import generics
+from rest_framework.permissions import IsAuthenticated
+
+from django.http import Http404, JsonResponse
+
 
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
 # Create your views here.
+#질문 조회
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
 
+#답변조회
 class AnswerViewSet(viewsets.ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
 
+#답변 생성
 class AnswerCreateAPIView(generics.CreateAPIView):
     serializer_class = AnswerSerializer
 
@@ -44,6 +52,7 @@ class AnswerCreateAPIView(generics.CreateAPIView):
         return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
+#답변 조회
 @api_view(['GET'])
 def get_answers_for_question(request, question_id):
     try:
@@ -53,12 +62,13 @@ def get_answers_for_question(request, question_id):
     except Answer.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
 
+#질문 조회
 class QuestionListAPIView(generics.ListAPIView):
         queryset = Question.objects.all()
         serializer_class = QuestionSerializer
 
 
-
+#질문 생성
 class QuestionCreateAPIView(generics.CreateAPIView):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
@@ -79,6 +89,19 @@ class QuestionCreateAPIView(generics.CreateAPIView):
 
 
         return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+#답변 삭제
+class AnswerDeleteAPIView(APIView):
+    # permission_classes = [IsAuthenticated]
+
+    def delete(self, request, question_id, answer_id):
+        try:
+            answer = Answer.objects.get(pk=answer_id, author=request.user)
+            answer.delete()
+            return Response(status=status.HTTP_204_NO_CONTENT)
+        except Answer.DoesNotExist:
+            return Response({'error': '글 작성자만 글을 지울 수 있습니다.'}, status=status.HTTP_403_FORBIDDEN)
 
 
 
