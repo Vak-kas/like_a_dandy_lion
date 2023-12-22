@@ -7,8 +7,8 @@ from .serializers import QuestionSerializer, AnswerSerializer
 from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
-from .models import Answer
-from .serializers import AnswerSerializer
+from rest_framework import generics
+from rest_framework import permissions
 # Create your views here.
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
@@ -17,6 +17,39 @@ class QuestionViewSet(viewsets.ModelViewSet):
 class AnswerViewSet(viewsets.ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
+
+class AnswerCreateAPIView(generics.CreateAPIView):
+    serializer_class = AnswerSerializer
+
+    def create(self, request, question_id):
+        # 입력 데이터에서 필요한 정보 추출
+        content = request.data.get('content')
+        author_id = request.data.get('author')  # 로그인된 사용자의 학번
+
+        # 해당 질문 객체 가져오기
+        question = Question.objects.get(pk=question_id)
+
+
+        # 사용자 객체 가져오기 (학번으로 검색)
+        author = User.objects.get(student_id=author_id)
+
+        # 답변 객체 생성 및 저장
+        answer = Answer(content=content, author=author, question=question)
+        answer.save()
+
+        # 생성된 답변 정보를 응답으로 반환
+        serializer = AnswerSerializer(answer)
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
+
+
+@api_view(['GET'])
+def get_answers_for_question(request, question_id):
+    try:
+        answers = Answer.objects.filter(question_id=question_id)
+        serializer = AnswerSerializer(answers, many=True)
+        return Response(serializer.data)
+    except Answer.DoesNotExist:
+        return Response(status=status.HTTP_404_NOT_FOUND)
 
 
 
@@ -42,10 +75,10 @@ def answer_create(request, question_id):
         form = AnswerForm(request.POST)
         if form.is_valid():
             answer = form.save(commit=False)
-            # answer.author = request.user;
+            answer.author = request.user;
 
             #임시 test
-            answer.author = User.objects.get(id=1)
+            # answer.author = User.objects.get(id=20201738)
             answer.question = question;
             answer.save()
             return redirect('{}#answer_{}'.format(
@@ -59,13 +92,9 @@ def answer_create(request, question_id):
 
 
 
-@api_view(['GET'])
-def get_answers_for_question(request, question_id):
-    try:
-        answers = Answer.objects.filter(question_id=question_id)
-        serializer = AnswerSerializer(answers, many=True)
-        return Response(serializer.data)
-    except Answer.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
+
+
+
+
 
 

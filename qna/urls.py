@@ -15,6 +15,6 @@ urlpatterns = [
     path('', views.index, name = "index"),
     path('', include(router.urls)),
     path('<int:question_id>/', views.detail, name="detail"),
-    path('answer/create/<int:question_id>/', views.answer_create, name="answer_create"),
-    path('questions/<int:question_id>/answers/', views.get_answers_for_question, name='get_answers_for_question')
+    path('<int:question_id>/answer/create/', views.AnswerCreateAPIView.as_view(), name='answer_create_api'),
+    path('<int:question_id>/answer/', views.get_answers_for_question, name='get_answers_for_question')
 ]

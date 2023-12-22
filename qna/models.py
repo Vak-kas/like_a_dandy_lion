@@ -3,7 +3,6 @@ from django.utils import timezone
 
 
 class User(models.Model):
-    id = models.BigAutoField(primary_key=True)
     student_id = models.IntegerField(help_text="Student ID", unique=True)
     name = models.CharField(help_text="Name", max_length=100)
     email = models.EmailField()
@@ -27,7 +26,7 @@ class Question(models.Model):
 
 class Answer(models.Model):
     # 질문 - Answer가 Question에 연결
-    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='질문', related_name='answer')
+    question = models.ForeignKey(Question, on_delete=models.CASCADE, verbose_name='질문', related_name='answers')
     # 답변 내용
     content = models.TextField(verbose_name='내용')
     # 작성자
