@@ -8,6 +8,8 @@ from rest_framework.decorators import api_view
 from rest_framework.response import Response
 from rest_framework import status
 from rest_framework import generics
+
+from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
 # Create your views here.
 class QuestionViewSet(viewsets.ModelViewSet):
@@ -50,6 +52,33 @@ def get_answers_for_question(request, question_id):
         return Response(serializer.data)
     except Answer.DoesNotExist:
         return Response(status=status.HTTP_404_NOT_FOUND)
+
+class QuestionListAPIView(generics.ListAPIView):
+        queryset = Question.objects.all()
+        serializer_class = QuestionSerializer
+
+
+
+class QuestionCreateAPIView(generics.CreateAPIView):
+    queryset = Question.objects.all()
+    serializer_class = QuestionSerializer
+
+    def create(self, request, *args, **kwargs):
+        # POST 요청에서 제목, 내용, 작성자 학번 추출
+        title = self.request.data.get('title')
+        content = self.request.data.get('content')
+        student_id = self.request.data.get('author')
+        user = User.objects.get(student_id=student_id)
+
+        # question 모델 생성
+        question = Question(title=title, content=content, author=user)
+        question.save()
+
+        # serializer를 사용하여 데이터 저장
+        serializer = self.get_serializer(question)
+
+
+        return Response(serializer.data, status=status.HTTP_201_CREATED)
 
 
 

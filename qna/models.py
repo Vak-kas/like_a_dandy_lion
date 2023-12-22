@@ -16,7 +16,7 @@ class Question(models.Model):
     # 작성자는 장고의 내장 User 모델을 외래키로 사용
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자', related_name='questions')
     # 생성 시간
-    created_at = models.DateTimeField(verbose_name='생성 시간')
+    created_at = models.DateTimeField(default=timezone.now, verbose_name='생성 시간')
     class Meta:
         verbose_name = 'QnA'
         verbose_name_plural = 'QnA'
