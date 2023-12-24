@@ -1,6 +1,5 @@
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
-from .forms import AnswerForm
 from .models import Question, Answer, User
 from rest_framework import viewsets, status
 from .serializers import QuestionSerializer, AnswerSerializer
@@ -12,6 +11,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.http import Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
+from django.utils import timezone
+
 
 
 # # Create your views here.
@@ -66,8 +67,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
         except Question.DoesNotExist:
             return Response({"error": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
 
-        print(question)
-        print(user)
+
         # User가 Question의 작성자와 일치하는지 확인
         if question.author == user:
             question.delete()  # 조건이 충족되면 질문을 삭제
@@ -85,6 +85,40 @@ class QuestionViewSet(viewsets.ModelViewSet):
         data = serializer.data
         data['answers'] = AnswerSerializer(answers, many=True).data
         return Response(data)
+
+    def update(self, request, *args, **kwargs):
+        # 클라이언트로부터 받은 데이터
+        data = request.data
+
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾습니다.
+        student_id = data.get('student_id')
+        try:
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "주어진 학번을 가진 사용자가 존재하지 않습니다."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # URL에서 제공된 question_id를 사용하여 해당 질문을 찾기
+        question_id = kwargs.get('pk')
+        try:
+            question = Question.objects.get(pk=question_id)
+        except Question.DoesNotExist:
+            return Response({"error": "질문을 찾을 수 없습니다."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # 질문 작성자와 현재 사용자가 일치하는지 확인
+        if question.author == user:
+            # 권한이 있는 경우 질문 내용 업데이트
+            question.title = data.get('title')
+            question.content = data.get('content')
+            question.modified_at = timezone.now()  # modified_at 필드 업데이트
+            question.save()
+            return Response({"message": "질문이 성공적으로 수정되었습니다."}, status=status.HTTP_200_OK)
+        else:
+            # 작성자가 일치하지 않으면 오류 메시지를 반환
+            return Response({"error": "이 질문을 수정할 권한이 없습니다."},
+                            status=status.HTTP_403_FORBIDDEN)
+
 
 class AnswerViewSet(viewsets.ModelViewSet):
     queryset = Answer.objects.all()
@@ -122,3 +156,94 @@ class AnswerViewSet(viewsets.ModelViewSet):
             "student_id": user.student_id,
             "created_at": answer.created_at,
         }}, status=status.HTTP_201_CREATED)
+
+    def destroy(self, request, *args, **kwargs):
+        # 클라이언트로부터 받은 데이터
+        data = request.data
+
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
+        student_id = data.get('student_id')
+        try:
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with the given student_id does not exist."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
+        answer_id = kwargs.get('pk')
+        try:
+            answer = Answer.objects.get(pk=answer_id)
+        except Answer.DoesNotExist:
+            return Response({"error": "Answer not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # 답변 작성자와 현재 사용자가 일치하는지 확인
+        if answer.author == user:
+            answer.delete()  # 조건이 충족되면 답변을 삭제
+            return Response({"message": "Answer deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            # 작성자가 일치하지 않으면 오류 메시지를 반환
+            return Response({"error": "You do not have permission to delete this answer."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+    def update(self, request, *args, **kwargs):
+        # 클라이언트로부터 받은 데이터
+        data = request.data
+
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾습니다.
+        student_id = data.get('student_id')
+        try:
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with the given student_id does not exist."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
+        answer_id = kwargs.get('pk')
+        try:
+            answer = Answer.objects.get(pk=answer_id)
+        except Answer.DoesNotExist:
+            return Response({"error": "Answer not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # 답변 작성자와 현재 사용자가 일치하는지 확인
+        if answer.author == user:
+            # 권한이 있는 경우 답변 내용 업데이트
+            answer.content = data.get('content')
+            answer.modified_at = timezone.now()  # Update modified_at field
+            answer.save()
+            return Response({"message": "Answer updated successfully"}, status=status.HTTP_200_OK)
+        else:
+            # 작성자가 일치하지 않으면 오류 메시지를 반환
+            return Response({"error": "You do not have permission to update this answer."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+
+    def retrieve(self, request, *args, **kwargs):
+        # 클라이언트로부터 받은 데이터
+        data = request.data
+
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
+        student_id = data.get('student_id')
+        try:
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with the given student_id does not exist."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
+        answer_id = kwargs.get('pk')
+        try:
+            answer = Answer.objects.get(pk=answer_id)
+        except Answer.DoesNotExist:
+            return Response({"error": "Answer not found."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # 답변 작성자와 현재 사용자가 일치하는지 확인
+        if answer.author == user:
+            serializer = AnswerSerializer(answer)
+            return Response(serializer.data, status=status.HTTP_200_OK)
+        else:
+            # 작성자가 일치하지 않으면 오류 메시지를 반환
+            return Response({"error": "You do not have permission to retrieve this answer."},
+                            status=status.HTTP_403_FORBIDDEN)

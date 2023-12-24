@@ -17,6 +17,7 @@ class Question(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자', related_name='questions')
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now, verbose_name='생성 시간')
+    modified_at = models.DateTimeField(null = True, blank = True)
     class Meta:
         verbose_name = 'QnA'
         verbose_name_plural = 'QnA'
@@ -33,6 +34,7 @@ class Answer(models.Model):
     author = models.ForeignKey(User, on_delete=models.CASCADE, verbose_name='작성자',related_name='answers')
     # 생성 시간
     created_at = models.DateTimeField(default=timezone.now,verbose_name='생성 시간')
+    modified_at = models.DateTimeField(null=True, blank=True)
 
     class Meta:
         verbose_name = '답변'

@@ -12,7 +12,7 @@ class QuestionSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Question
-        fields = ['id', 'title', 'content', 'author', 'created_at']
+        fields = ['id', 'title', 'content', 'author', 'created_at', "modified_at"]
 
 class AnswerSerializer(serializers.ModelSerializer):
     author = CustomUserSerializer()  # 커스텀 UserSerializer 사용
@@ -20,7 +20,7 @@ class AnswerSerializer(serializers.ModelSerializer):
 
     class Meta:
         model = Answer
-        fields = ['id', 'question', 'question_title', 'content', 'author', 'created_at']
+        fields = ['id', 'question', 'question_title', 'content', 'author', 'created_at', "modified_at"]
 
 
 
