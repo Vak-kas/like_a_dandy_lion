@@ -133,6 +133,6 @@ CORS_ALLOW_ALL_ORIGINS = True
 
 # 또는 특정 도메인만 허용하고 싶다면
 CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3000",
+    "http://localhost:3002",
     # 다른 허용할 출처들
 ]
