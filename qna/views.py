@@ -2,151 +2,123 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from .forms import AnswerForm
 from .models import Question, Answer, User
-from rest_framework import viewsets
+from rest_framework import viewsets, status
 from .serializers import QuestionSerializer, AnswerSerializer
 from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.views import APIView
 from rest_framework.response import Response
-from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
-
 from django.http import Http404, JsonResponse
-
-
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
-# Create your views here.
+
+
+# # Create your views here.
 #질문 조회
 class QuestionViewSet(viewsets.ModelViewSet):
     queryset = Question.objects.all()
     serializer_class = QuestionSerializer
+    # permission_classes = [permissions.IsAuthenticatedOrReadOnly]  # 로그인한 사용자만 수정 가능하게
 
-#답변조회
+    # 질문 생성
+
+    def create(self, request, *args, **kwargs):
+        # 클라이언트로부터 받은 데이터
+        data = request.data
+
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾습니다.
+        student_id = data.get('student_id')
+        try:
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with the given student_id does not exist."},
+                            status=status.HTTP_404_NOT_FOUND)
+
+        # 새 Question 객체를 생성하고 User 객체를 연결합니다.
+        question = Question(title=data.get('title'), content=data.get('content'), author=user)
+
+        # Question 객체를 저장합니다.
+        question.save()
+
+        # 저장된 Question 객체의 정보를 반환합니다.
+        return Response({"message": "Question created successfully", "question": {
+            "title": question.title,
+            "content": question.content,
+            "student_id": user.student_id,
+            "created_at": question.created_at,
+        }}, status=status.HTTP_201_CREATED)
+
+
+    #질문 삭제
+    def destroy(self, request, *args, **kwargs):
+        student_id = request.data.get('student_id')  # 프론트엔드에서 전송한 student_id
+
+        try:
+            # student_id를 사용하여 User 객체 찾기
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist: #User 객체 존재하지 않다면?
+            return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        try:
+            # URL에서 제공된 pk를 사용하여 Question 객체를 찾기
+            question = Question.objects.get(pk=kwargs['pk'])
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."}, status=status.HTTP_404_NOT_FOUND)
+
+        print(question)
+        print(user)
+        # User가 Question의 작성자와 일치하는지 확인
+        if question.author == user:
+            question.delete()  # 조건이 충족되면 질문을 삭제
+            return Response({"message": "Question deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
+        else:
+            # 작성자가 일치하지 않으면 오류 메시지를 반환
+            return Response({"error": "You do not have permission to delete this question."},
+                            status=status.HTTP_403_FORBIDDEN)
+
+
+    def retrieve(self, request, *args, **kwargs):
+        instance = self.get_object()
+        answers = Answer.objects.filter(question=instance)
+        serializer = self.get_serializer(instance)
+        data = serializer.data
+        data['answers'] = AnswerSerializer(answers, many=True).data
+        return Response(data)
+
 class AnswerViewSet(viewsets.ModelViewSet):
     queryset = Answer.objects.all()
     serializer_class = AnswerSerializer
 
-#답변 생성
-class AnswerCreateAPIView(generics.CreateAPIView):
-    serializer_class = AnswerSerializer
+    def create(self, request, *args, **kwargs):
+        # 클라이언트로부터 받은 데이터
+        data = request.data
 
-    def create(self, request, question_id):
-        # 입력 데이터에서 필요한 정보 추출
-        content = request.data.get('content')
-        author_id = request.data.get('author')  # 로그인된 사용자의 학번
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾습니다.
+        student_id = data.get('student_id')
+        try:
+            user = User.objects.get(student_id=student_id)
+        except User.DoesNotExist:
+            return Response({"error": "User with the given student_id does not exist."},
+                            status=status.HTTP_404_NOT_FOUND)
 
-        # 해당 질문 객체 가져오기
-        question = Question.objects.get(pk=question_id)
+        # URL에서 제공된 question_id를 사용하여 해당 질문을 찾기
+        question_id = kwargs.get('question_id')
+        try:
+            question = Question.objects.get(pk=question_id)
+        except Question.DoesNotExist:
+            return Response({"error": "Question not found."},
+                            status=status.HTTP_404_NOT_FOUND)
 
+        # 새 Answer 객체를 생성하고 User와 Question 객체를 연결합니다.
+        answer = Answer(content=data.get('content'), author=user, question=question)
 
-        # 사용자 객체 가져오기 (학번으로 검색)
-        author = User.objects.get(student_id=author_id)
-
-        # 답변 객체 생성 및 저장
-        answer = Answer(content=content, author=author, question=question)
+        # Answer 객체를 저장합니다.
         answer.save()
 
-        # 생성된 답변 정보를 응답으로 반환
-        serializer = AnswerSerializer(answer)
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-#답변 조회
-@api_view(['GET'])
-def get_answers_for_question(request, question_id):
-    try:
-        answers = Answer.objects.filter(question_id=question_id)
-        serializer = AnswerSerializer(answers, many=True)
-        return Response(serializer.data)
-    except Answer.DoesNotExist:
-        return Response(status=status.HTTP_404_NOT_FOUND)
-
-#질문 조회
-class QuestionListAPIView(generics.ListAPIView):
-        queryset = Question.objects.all()
-        serializer_class = QuestionSerializer
-
-
-#질문 생성
-class QuestionCreateAPIView(generics.CreateAPIView):
-    queryset = Question.objects.all()
-    serializer_class = QuestionSerializer
-
-    def create(self, request, *args, **kwargs):
-        # POST 요청에서 제목, 내용, 작성자 학번 추출
-        title = self.request.data.get('title')
-        content = self.request.data.get('content')
-        student_id = self.request.data.get('author')
-        user = User.objects.get(student_id=student_id)
-
-        # question 모델 생성
-        question = Question(title=title, content=content, author=user)
-        question.save()
-
-        # serializer를 사용하여 데이터 저장
-        serializer = self.get_serializer(question)
-
-
-        return Response(serializer.data, status=status.HTTP_201_CREATED)
-
-
-#답변 삭제
-class AnswerDeleteAPIView(APIView):
-    # permission_classes = [IsAuthenticated]
-
-    def delete(self, request, question_id, answer_id):
-        try:
-            answer = Answer.objects.get(pk=answer_id, author=request.user)
-            answer.delete()
-            return Response(status=status.HTTP_204_NO_CONTENT)
-        except Answer.DoesNotExist:
-            return Response({'error': '글 작성자만 글을 지울 수 있습니다.'}, status=status.HTTP_403_FORBIDDEN)
-
-
-
-def index(request):
-    #목록 출력
-    question_list = Question.objects.order_by("-created_at");
-    context = {'question_list' : question_list}
-    return render(request, 'question_list.html', context);
-
-
-def detail(request, question_id):
-    #내용 출력
-    question = get_object_or_404(Question, pk = question_id)
-    context = {'question' : question }
-    return render(request, 'question_detail.html', context);
-
-
-# @login_required
-def answer_create(request, question_id):
-    #답변 등록
-    question = get_object_or_404(Question, pk=question_id)
-    if request.method == "POST":
-        form = AnswerForm(request.POST)
-        if form.is_valid():
-            answer = form.save(commit=False)
-            answer.author = request.user;
-
-            #임시 test
-            # answer.author = User.objects.get(id=20201738)
-            answer.question = question;
-            answer.save()
-            return redirect('{}#answer_{}'.format(
-                resolve_url('qna:detail', question_id=question.id), answer.id));
-    else:
-        form = AnswerForm()
-    context = {'form': form, 'question': question}
-    return render(request, 'question_detail.html', context)
-
-
-
-
-
-
-
-
-
-
-
+        # 저장된 Answer 객체의 정보를 반환합니다.
+        return Response({"message": "Answer created successfully", "answer": {
+            "content": answer.content,
+            "student_id": user.student_id,
+            "created_at": answer.created_at,
+        }}, status=status.HTTP_201_CREATED)
