@@ -53,7 +53,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
     #질문 삭제
     def destroy(self, request, *args, **kwargs):
-        student_id = request.data.get('student_id')  # 프론트엔드에서 전송한 student_id
+        student_id = kwargs.get('student_id')
 
         try:
             # student_id를 사용하여 User 객체 찾기
