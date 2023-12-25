@@ -50,7 +50,7 @@ MIDDLEWARE = [
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
     'corsheaders.middleware.CorsMiddleware',
-    'django.middleware.favicon.FaviconMiddleware',
+    # 'django.middleware.favicon.FaviconMiddleware',
 ]
 
 ROOT_URLCONF = 'lion.urls'
