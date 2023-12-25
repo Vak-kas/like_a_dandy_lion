@@ -132,8 +132,8 @@ DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
 # 모든 도메인에서의 요청을 허용하려면
 CORS_ALLOW_ALL_ORIGINS = True
 
-# 또는 특정 도메인만 허용하고 싶다면
-CORS_ALLOWED_ORIGINS = [
-    "http://localhost:3005",
-    # 다른 허용할 출처들
-]
+# # 또는 특정 도메인만 허용하고 싶다면
+# CORS_ALLOWED_ORIGINS = [
+#     "http://localhost:3005",
+#     # 다른 허용할 출처들
+# ]
