@@ -13,5 +13,5 @@ router.register(r'questions/(?P<question_id>\d+)/answers', views.AnswerViewSet, 
 
 urlpatterns = [
     path('', include(router.urls)),
-    path('qna/questions/<int:pk>/student_id:<int:student_id>/', views.QuestionDetailView.as_view(), name='question-detail'),
+    # path('qna/questions/<int:pk>/student_id:<int:student_id>/', views.QuestionDetailView.as_view(), name='question-detail'),
 ]
