@@ -54,7 +54,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
     #질문 삭제
     def destroy(self, request, *args, **kwargs):
         print("삭제 요청이 들어왔음")
-        student_id = kwargs['student_id']  # 수정된 부분
+        student_id = request.query_params.get('student_id')  # 학번 정보를 요청의 쿼리 파라미터로부터 얻어옴
         print(student_id)
 
         try:
