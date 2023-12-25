@@ -54,13 +54,14 @@ class QuestionViewSet(viewsets.ModelViewSet):
     #질문 삭제
     def destroy(self, request, *args, **kwargs):
         student_id = kwargs.get('student_id')
+        print(student_id)
 
         try:
             # student_id를 사용하여 User 객체 찾기
             user = User.objects.get(student_id=student_id)
         except User.DoesNotExist: #User 객체 존재하지 않다면?
             return Response({"error": "User not found."}, status=status.HTTP_404_NOT_FOUND)
-
+        print(user)
         try:
             # URL에서 제공된 pk를 사용하여 Question 객체를 찾기
             question = Question.objects.get(pk=kwargs['pk'])
