@@ -21,4 +21,5 @@ from qna import views
 urlpatterns = [
     path('admin/', admin.site.urls),
     path('qna/', include('qna.urls')),
+
 ]
