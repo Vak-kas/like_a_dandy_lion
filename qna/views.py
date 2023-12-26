@@ -252,20 +252,20 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
     def retrieve(self, request, *args, **kwargs):
         # 클라이언트로부터 받은 데이터
-        data = request.data
+
 
         # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
 
         # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
         answer_id = kwargs.get('pk')
-        print(answer_id)
+        # print(answer_id)
         try:
             answer = Answer.objects.get(pk=answer_id)
         except Answer.DoesNotExist:
             return Response({"error": "Answer not found."},
                             status=status.HTTP_404_NOT_FOUND)
 
-
+        serializer = AnswerSerializer(answer)
         return Response(serializer.data, status=status.HTTP_200_OK)
 
 
