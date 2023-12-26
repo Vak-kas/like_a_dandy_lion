@@ -2,7 +2,7 @@ from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from .models import Question, Answer, User
 from rest_framework import viewsets, status
-from .serializers import QuestionSerializer, AnswerSerializer
+from .serializers import QuestionSerializer, AnswerSerializer, UserSerializer
 from rest_framework.decorators import api_view
 from rest_framework import generics
 from rest_framework.views import APIView
@@ -12,6 +12,11 @@ from django.http import Http404, JsonResponse
 from django.views.decorators.csrf import csrf_exempt
 from rest_framework import permissions
 from django.utils import timezone
+from rest_framework.decorators import action
+
+
+
+
 
 
 
@@ -121,6 +126,24 @@ class QuestionViewSet(viewsets.ModelViewSet):
             return Response({"error": "이 질문을 수정할 권한이 없습니다."},
                             status=status.HTTP_403_FORBIDDEN)
 
+    def list(self, request, *args, **kwargs):
+        # student_id 파라미터를 받아옴
+        student_id = request.query_params.get('student_id')
+
+        # student_id가 존재하면 해당 사용자의 질문 목록만 필터링
+        if student_id:
+            queryset = Question.objects.filter(author__student_id=student_id)
+        else:
+            queryset = self.filter_queryset(self.get_queryset())
+
+        page = self.paginate_queryset(queryset)
+        if page is not None:
+            serializer = self.get_serializer(page, many=True)
+            return self.get_paginated_response(serializer.data)
+
+        serializer = self.get_serializer(queryset, many=True)
+        return Response(serializer.data)
+
 
 class AnswerViewSet(viewsets.ModelViewSet):
     queryset = Answer.objects.all()
@@ -161,10 +184,10 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
     def destroy(self, request, *args, **kwargs):
         # 클라이언트로부터 받은 데이터
-        data = request.data
+        # data = request.data
 
         # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
-        student_id = data.get('student_id')
+        student_id = request.query_params.get('student_id')
         try:
             user = User.objects.get(student_id=student_id)
         except User.DoesNotExist:
@@ -249,3 +272,5 @@ class AnswerViewSet(viewsets.ModelViewSet):
             # 작성자가 일치하지 않으면 오류 메시지를 반환
             return Response({"error": "You do not have permission to retrieve this answer."},
                             status=status.HTTP_403_FORBIDDEN)
+
+
