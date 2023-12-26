@@ -258,6 +258,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
         # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
         answer_id = kwargs.get('pk')
+        print(answer_id)
         try:
             answer = Answer.objects.get(pk=answer_id)
         except Answer.DoesNotExist:
