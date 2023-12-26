@@ -255,12 +255,6 @@ class AnswerViewSet(viewsets.ModelViewSet):
         data = request.data
 
         # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
-        student_id = data.get('student_id')
-        try:
-            user = User.objects.get(student_id=student_id)
-        except User.DoesNotExist:
-            return Response({"error": "User with the given student_id does not exist."},
-                            status=status.HTTP_404_NOT_FOUND)
 
         # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
         answer_id = kwargs.get('pk')
@@ -270,13 +264,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
             return Response({"error": "Answer not found."},
                             status=status.HTTP_404_NOT_FOUND)
 
-        # 답변 작성자와 현재 사용자가 일치하는지 확인
-        if answer.author == user:
-            serializer = AnswerSerializer(answer)
-            return Response(serializer.data, status=status.HTTP_200_OK)
-        else:
-            # 작성자가 일치하지 않으면 오류 메시지를 반환
-            return Response({"error": "You do not have permission to retrieve this answer."},
-                            status=status.HTTP_403_FORBIDDEN)
+
+        return Response(serializer.data, status=status.HTTP_200_OK)
 
 
