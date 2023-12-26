@@ -185,9 +185,16 @@ class AnswerViewSet(viewsets.ModelViewSet):
     def destroy(self, request, *args, **kwargs):
         # 클라이언트로부터 받은 데이터
         # data = request.data
+<<<<<<< HEAD
 
         # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
         student_id = request.query_params.get('student_id')
+=======
+        student_id = request.query_params.get('student_id')
+
+        # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾기
+        # student_id = data.get('student_id')
+>>>>>>> 1600054296298251fe2d18705c8af26b293a57d0
         try:
             user = User.objects.get(student_id=student_id)
         except User.DoesNotExist:
