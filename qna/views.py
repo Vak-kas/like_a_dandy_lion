@@ -233,18 +233,20 @@ class AnswerViewSet(viewsets.ModelViewSet):
 
         # URL에서 제공된 answer_id를 사용하여 해당 답변을 찾기
         answer_id = kwargs.get('pk')
+        print(answer_id)
         try:
             answer = Answer.objects.get(pk=answer_id)
         except Answer.DoesNotExist:
             return Response({"error": "Answer not found."},
                             status=status.HTTP_404_NOT_FOUND)
-
+        print(answer)
         # 답변 작성자와 현재 사용자가 일치하는지 확인
         if answer.author == user:
             # 권한이 있는 경우 답변 내용 업데이트
             answer.content = data.get('content')
             answer.modified_at = timezone.now()  # Update modified_at field
             answer.save()
+            print(answer)
             return Response({"message": "Answer updated successfully"}, status=status.HTTP_200_OK)
         else:
             # 작성자가 일치하지 않으면 오류 메시지를 반환
