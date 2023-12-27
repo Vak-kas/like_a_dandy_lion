@@ -220,9 +220,11 @@ class AnswerViewSet(viewsets.ModelViewSet):
     def update(self, request, *args, **kwargs):
         # 클라이언트로부터 받은 데이터
         data = request.data
+        print(data)
 
         # 클라이언트에서 제공한 student_id를 사용하여 User 객체를 찾습니다.
         student_id = data.get('student_id')
+        print(student_id)
         try:
             user = User.objects.get(student_id=student_id)
         except User.DoesNotExist:
