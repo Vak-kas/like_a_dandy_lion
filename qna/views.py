@@ -239,14 +239,14 @@ class AnswerViewSet(viewsets.ModelViewSet):
         except Answer.DoesNotExist:
             return Response({"error": "Answer not found."},
                             status=status.HTTP_404_NOT_FOUND)
-        print(answer)
+        print(answer.content)
         # 답변 작성자와 현재 사용자가 일치하는지 확인
         if answer.author == user:
             # 권한이 있는 경우 답변 내용 업데이트
             answer.content = data.get('content')
             answer.modified_at = timezone.now()  # Update modified_at field
             answer.save()
-            print(answer)
+            print(answer.content)
             return Response({"message": "Answer updated successfully"}, status=status.HTTP_200_OK)
         else:
             # 작성자가 일치하지 않으면 오류 메시지를 반환
