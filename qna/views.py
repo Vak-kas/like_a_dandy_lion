@@ -76,7 +76,7 @@ class QuestionViewSet(viewsets.ModelViewSet):
 
 
         # User가 Question의 작성자와 일치하는지 확인
-        if question.author == user:
+        if question.author == user or user.division == "admin":
             question.delete()  # 조건이 충족되면 질문을 삭제
             return Response({"message": "Question deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         else:
@@ -209,7 +209,7 @@ class AnswerViewSet(viewsets.ModelViewSet):
                             status=status.HTTP_404_NOT_FOUND)
 
         # 답변 작성자와 현재 사용자가 일치하는지 확인
-        if answer.author == user:
+        if answer.author == user or user.division == "admin":
             answer.delete()  # 조건이 충족되면 답변을 삭제
             return Response({"message": "Answer deleted successfully"}, status=status.HTTP_204_NO_CONTENT)
         else:
