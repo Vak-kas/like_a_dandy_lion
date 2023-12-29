@@ -3,7 +3,7 @@ from rest_framework.routers import DefaultRouter
 from .views import QuestionViewSet, AnswerViewSet
 from . import views
 
-app_name = 'qna'
+app_name = 'free'
 
 # 라우터 생성 및 ViewSet 등록
 router = DefaultRouter()
