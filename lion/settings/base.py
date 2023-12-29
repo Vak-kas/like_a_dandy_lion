@@ -31,6 +31,7 @@ ALLOWED_HOSTS = ["13.124.78.53"]
 
 INSTALLED_APPS = [
     'rest_framework',
+    'free.apps.FreeConfig',
     'qna.apps.QnaConfig',
     'django.contrib.admin',
     'django.contrib.auth',
