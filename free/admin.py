@@ -4,3 +4,6 @@ from .models import Question, User;
 # Register your models here.
 admin.site.register(Question);
 admin.site.register(User);
+from django.contrib import admin
+
+# Register your models here.

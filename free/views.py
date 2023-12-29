@@ -1,3 +1,6 @@
+from django.shortcuts import render
+
+# Create your views here.
 from django.contrib.auth.decorators import login_required
 from django.shortcuts import render, get_object_or_404, redirect, resolve_url
 from .models import Question, Answer, User

@@ -44,3 +44,6 @@ class Answer(models.Model):
         return f"{self.author}'s answer to {self.question.title}"
 
 
+from django.db import models
+
+# Create your models here.
